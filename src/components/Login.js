@@ -3,7 +3,7 @@ import {useNavigate} from 'react-router-dom';
 import {authorize} from '../utils/auth.js';
 import Header from './Header.js';
 
-export default function Login() {
+export default function Login(props) {
     const [formValue, setFormValue] = useState({
         email: '',
         password: ''
@@ -28,7 +28,8 @@ export default function Login() {
         .then((res) => {
             if (res.token) {
                 setFormValue({email: '', password: ''});
-                navigate('/main', {replace: true});
+                props.handleLogin();
+                navigate('/', {replace: true});
               }
         })
         .catch(err => console.log(err));

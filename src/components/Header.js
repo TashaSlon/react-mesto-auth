@@ -1,7 +1,12 @@
 import logo from '../images/logo.svg';
-import {Link, useNavigate} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 export default function Header(props) {
+
+    function signOut(){
+        localStorage.removeItem('token');
+    }
+
     return (
         <header className="header">
             <div className='header__block'>
@@ -10,11 +15,11 @@ export default function Header(props) {
                     switch (props.page) {
                         case "auth": 
                             return <Link to="/sign-up" className="auth__login-link">Регистрация</Link>
-                        case 2: 
-                            return <>
+                        case "main": 
+                            return <div className='header__user'>
                                 <p>{props.email}</p>
-                                <Link to="/sign-in" className="auth__login-link">Выйти</Link>
-                            </>
+                                <Link to="/sign-in" onClick={signOut} className="auth__login-link">Выйти</Link>
+                            </div>
                         default:
                             return <Link to="/sign-in" className="auth__login-link">Войти</Link>
                     }

@@ -4,13 +4,13 @@ import { CurrentUserContext } from "../contexts/CurrentUserContext";
 import Header from './Header.js';
 import Footer from './Footer.js';
 
-export default function Main(props) {
+const Main = (props) => {
   const currentUser = useContext(CurrentUserContext);
-  const page = 2;
+  const page = 'main';
   
   return (
     <>
-    <Header page={page} email={currentUser.email}/>
+    <Header page={page} email={props.userData.email}/>
     <main className="content">
       <section className="profile">
         <div className="profile__info">
@@ -40,3 +40,5 @@ export default function Main(props) {
     </>
   );
 };
+
+export {Main};

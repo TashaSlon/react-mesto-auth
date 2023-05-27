@@ -3,7 +3,7 @@ import {Link, useNavigate} from 'react-router-dom';
 import { register } from '../utils/auth.js';
 import Header from './Header.js';
 
-const Register = () => {
+const Register = ({onInfoTooltip}) => {
   const [formValue, setFormValue] = useState({
     email: '',
     password: ''
@@ -24,12 +24,12 @@ const Register = () => {
     const { password, email } = formValue;
     register(password, email)
     .then((res) => {
-        console.log(res);
+        onInfoTooltip(res);
         navigate('/sign-in', {replace: true});
     }
     );
   }
-  const page = 1;
+  const page = 'signup';
 
   return (
     <>
