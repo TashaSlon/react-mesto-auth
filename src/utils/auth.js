@@ -4,19 +4,13 @@ export const register = (password, email) => {
   return fetch(`${BASE_URL}/signup`, {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({password, email})
+    body: JSON.stringify({"password": password,
+    "email": email })
   })
   .then((response) => {
-    try {
-      if (response.status === 200){
-        return response.json();
-      }
-    } catch(e){
-      return (e)
-    }
+    return response.json();
   })
   .then((res) => {
     return res;
@@ -24,21 +18,35 @@ export const register = (password, email) => {
   .catch((err) => console.log(err));
 };
 
-export const authorize = (identifier, password) => {
-  return fetch(`${BASE_URL}/auth/local`, {
+export const authorize = (password, email) => {
+  return fetch(`${BASE_URL}/signin`, {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({identifier, password})
+    body: JSON.stringify({password, email})
   })
   .then((response => response.json()))
   .then((data) => {
-    if (data.jwt){
-      localStorage.setItem('jwt', data.jwt);
+    if (data.token){
+      localStorage.setItem('token', data.token);
       return data;
     }
   })
   .catch(err => console.log(err))
+}; 
+
+export const getEmail = () => {
+  return fetch(`${BASE_URL}/users/me`, {
+    method: 'GET',
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization" : `Bearer ${localStorage.getItem('token')}`
+    }
+  })
+  .then((response => response.json()))
+  .then((res) => {
+    return res;
+  })
+  .catch((err) => console.log(err));
 }; 

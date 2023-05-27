@@ -22,7 +22,9 @@ const Register = () => {
     e.preventDefault();
     
     const { password, email } = formValue;
-    register(password, email).then((res) => {
+    register(password, email)
+    .then((res) => {
+        console.log(res);
         navigate('/sign-in', {replace: true});
     }
     );

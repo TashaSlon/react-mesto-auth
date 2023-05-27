@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useNavigate } from 'react-router-dom';
 import Main from './Main.js';
 import PopupWithForm from './PopupWithForm.js';
 import ImagePopup from './ImagePopup.js';
 import Login from './Login.js';
 import Register from './Register.js';
+import Header from './Header.js';
 import { api } from '../utils/Api.js';
 import { CurrentUserContext } from '../contexts/CurrentUserContext.js';
 import {EditProfilePopup} from './EditProfilePopup.js';
 import {EditAvatarPopup} from './EditAvatarPopup.js';
 import {AddPlacePopup} from './AddPlacePopup.js';
-import {ProtectedRouteElement} from './ProtectedRoute.js';
+import ProtectedRouteElement from './ProtectedRoute.js';
+import { getEmail } from '../utils/auth.js';
 
 
 function App() {
@@ -22,6 +24,9 @@ function App() {
   const [currentUser, setCurrentUser] = useState({});
   const [cards, setCards] = useState([]);
   const [loggedIn, setLoggedIn] = useState(false);
+  let [userData, setUserData] = useState({});
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.getUserInfo()
@@ -38,6 +43,31 @@ function App() {
     })
     .catch(err => console.log(`Ошибка.....: ${err}`))
   },[]);
+
+  useEffect(() => {
+    tokenCheck();
+  }, [])
+
+  const tokenCheck = () => {
+    if (localStorage.getItem('token')){
+      const token = localStorage.getItem('token');
+
+      if (token){
+            getEmail()
+            .then((res) => {
+              if (res){
+                setLoggedIn(true);
+                userData = {
+                  email: res.email
+                }
+                setUserData(userData);
+                navigate("/main", {replace: true});
+              }
+          });
+      }
+    }
+  } 
+
 
   function handleEditAvatarClick() {
     setIsEditAvatarPopupOpen(true);
@@ -115,13 +145,14 @@ function App() {
   }
 
   function handleLogin() {
-
+    setLoggedIn(true);
   }
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="page">
-        <Routes>       
+        <Routes>
+          <Route path="/header" element={<ProtectedRouteElement element={<Header userData={userData}/>} loggedIn={loggedIn}/>} />
           <Route path="/main" element={<ProtectedRouteElement 
           element={<Main onEditProfile = {handleEditProfileClick}
             onAddPlace = {handleAddPlaceClick} 
@@ -139,7 +170,7 @@ function App() {
             <div className="loginContainer">
               <Login handleLogin={handleLogin} />
             </div>} />
-          <Route path="/" element={loggedIn ? <Navigate to="/main" replace /> : <Navigate to="//sign-in" replace />} />
+          <Route path="/" element={loggedIn ? <Navigate to="/main" replace /> : <Navigate to="/sign-in" replace />} />
         </Routes>
 
         <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser}/>
