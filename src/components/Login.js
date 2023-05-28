@@ -1,6 +1,4 @@
 import React, {useState} from 'react';
-import {useNavigate} from 'react-router-dom';
-import {authorize} from '../utils/auth.js';
 import Header from './Header.js';
 
 export default function Login(props) {
@@ -8,7 +6,6 @@ export default function Login(props) {
         email: '',
         password: ''
     })
-    const navigate = useNavigate();
 
     const handleChange = (e) => {
         const {name, value} = e.target;
@@ -16,7 +13,7 @@ export default function Login(props) {
         setFormValue({
             ...formValue,
             [name]: value
-    });
+        });
     }
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -24,16 +21,10 @@ export default function Login(props) {
             return;
         }
         const { password, email } = formValue;
-        authorize(password, email)
-        .then((res) => {
-            if (res.token) {
-                setFormValue({email: '', password: ''});
-                props.handleLogin();
-                navigate('/', {replace: true});
-              }
-        })
-        .catch(err => console.log(err));
+        props.handleLogin(password, email);
+        setFormValue({email: '', password: ''});
     }
+
     const page = "auth";
 
     return (

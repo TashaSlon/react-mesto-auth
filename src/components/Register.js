@@ -1,14 +1,12 @@
 import React, {useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
-import { register } from '../utils/auth.js';
+import {Link} from 'react-router-dom';
 import Header from './Header.js';
 
-const Register = ({onInfoTooltip}) => {
+const Register = (props) => {
   const [formValue, setFormValue] = useState({
     email: '',
     password: ''
   })
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const {name, value} = e.target;
@@ -22,12 +20,7 @@ const Register = ({onInfoTooltip}) => {
     e.preventDefault();
     
     const { password, email } = formValue;
-    register(password, email)
-    .then((res) => {
-        onInfoTooltip(res);
-        navigate('/sign-in', {replace: true});
-    }
-    );
+    props.onRegister(password, email);
   }
   const page = 'signup';
 

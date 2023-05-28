@@ -5,7 +5,6 @@ import PopupWithForm from './PopupWithForm.js';
 import ImagePopup from './ImagePopup.js';
 import Login from './Login.js';
 import Register from './Register.js';
-import Header from './Header.js';
 import { api } from '../utils/Api.js';
 import { CurrentUserContext } from '../contexts/CurrentUserContext.js';
 import {EditProfilePopup} from './EditProfilePopup.js';
@@ -13,7 +12,7 @@ import {EditAvatarPopup} from './EditAvatarPopup.js';
 import {AddPlacePopup} from './AddPlacePopup.js';
 import ProtectedRouteElement from './ProtectedRoute';
 import InfoTooltip from './InfoTooltip';
-import { getEmail } from '../utils/auth.js';
+import { getEmail, authorize, register } from '../utils/auth.js';
 
 
 function App() {
@@ -26,50 +25,47 @@ function App() {
   const [currentUser, setCurrentUser] = useState({});
   const [cards, setCards] = useState([]);
   const [loggedIn, setLoggedIn] = useState(false);
-  let [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState({});
   const [statusSignup, setStatusSignup] = useState(false);
 
   const navigate = useNavigate();
+  const token = localStorage.getItem('token');
 
   useEffect(() => {
-    api.getUserInfo()
-    .then(userData => {
-      setCurrentUser(userData);
-    })
-    .catch(err => console.log(`Ошибка.....: ${err}`))
-  },[]);
+     
+    if (token){
+      api.getUserInfo()
+        .then(userData => {
+          setCurrentUser(userData);
+        })
+        .catch(err => console.log(`Ошибка.....: ${err}`))
+    }},[]);
+
+  useEffect(() => { 
+    if (token){
+      api.getCards()
+      .then(cards => {
+        setCards(cards);
+      })
+      .catch(err => console.log(`Ошибка.....: ${err}`))
+    }},[]);
 
   useEffect(() => {
-    api.getCards()
-    .then(cards => {
-      setCards(cards);
-    })
-    .catch(err => console.log(`Ошибка.....: ${err}`))
-  },[]);
 
-  const tokenCheck = () => {
-    if (localStorage.getItem('token')){
-      const token = localStorage.getItem('token');
-
-      if (token){
-            getEmail()
-            .then((res) => {
-              if (res){
-                setLoggedIn(true);
-                userData = {
-                  email: res.data.email
-                }
-                setUserData(userData);
-                navigate("/", {replace: true});
-              }
+    if (token){
+      getEmail()
+      .then((res) => {
+        if (res){
+          setLoggedIn(true);
+          setUserData({
+            email: res.data.email
           });
-      }
+          navigate("/", {replace: true});
+        }
+      })
+      .catch(err => console.log(`Ошибка.....: ${err}`))
     }
-  } 
-
-  useEffect(() => {
-    tokenCheck();
-  }, [])
+  }, [token])
 
   function handleEditAvatarClick() {
     setIsEditAvatarPopupOpen(true);
@@ -88,10 +84,10 @@ function App() {
   }
 
   function handleInfoTooltipClick(res) {
-    setIsInfoTooltipOpen(true);
     if(res.data) {
       setStatusSignup(true);
     }
+    setIsInfoTooltipOpen(true);
   };
 
   function closeAllPopups() {
@@ -150,15 +146,36 @@ function App() {
     .catch(err => console.log(`Ошибка.....: ${err}`))
   }
 
-  function handleLogin() {
-    setLoggedIn(true);
+  function handleLogin(password, email) {
+    authorize(password, email)
+      .then((res) => {
+          setUserData(email);
+          if (res.token) {
+              setLoggedIn(true);
+              navigate('/', {replace: true});
+            }
+      })
+      .catch(err => handleInfoTooltipClick(err));
+  }
+
+  function handleRegister(password, email) {
+    register(password, email)
+    .then((res) => {
+        handleInfoTooltipClick(res);
+        navigate('/sign-in', {replace: true});
+    })
+    .catch(err =>  handleInfoTooltipClick(err));
+  }
+
+  function signOut(){
+    localStorage.removeItem('token');
+    navigate('/sign-in', {replace: true});
   }
 
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="page">
         <Routes>
-          <Route path="/header" element={<ProtectedRouteElement element={Header} userData={userData} loggedIn={loggedIn}/>} />
           <Route path="/" element={<ProtectedRouteElement 
           element={Main} onEditProfile = {handleEditProfileClick}
             onAddPlace = {handleAddPlaceClick} 
@@ -168,14 +185,15 @@ function App() {
             cards = {cards}
             onCardDelete = {handleCardDelete}
             userData = {userData}
+            signOut = {signOut}
           loggedIn={loggedIn}/>} />
           <Route path="/sign-up" element={
             <div className="registerContainer">
-              <Register onInfoTooltip={handleInfoTooltipClick}/>
+              <Register onRegister={handleRegister} />
             </div>} />
           <Route path="/sign-in" element={
             <div className="loginContainer">
-              <Login handleLogin={handleLogin} />
+              <Login handleLogin={handleLogin}/>
             </div>} />
           <Route path="/" element={loggedIn ? <Navigate to="/" replace /> : <Navigate to="/sign-in" replace />} />
         </Routes>

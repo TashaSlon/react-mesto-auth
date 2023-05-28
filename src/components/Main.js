@@ -10,7 +10,7 @@ const Main = (props) => {
   
   return (
     <>
-    <Header page={page} email={props.userData.email}/>
+    <Header page={page} email={props.userData.email} signOut={props.signOut}/>
     <main className="content">
       <section className="profile">
         <div className="profile__info">
