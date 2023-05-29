@@ -26,29 +26,29 @@ function App() {
   const [cards, setCards] = useState([]);
   const [loggedIn, setLoggedIn] = useState(false);
   const [userData, setUserData] = useState({});
-  const [statusSignup, setStatusSignup] = useState(false);
+  const [status, setStatus] = useState(false);
 
   const navigate = useNavigate();
   const token = localStorage.getItem('token');
 
   useEffect(() => {
      
-    if (token){
+    if (loggedIn){
       api.getUserInfo()
         .then(userData => {
           setCurrentUser(userData);
         })
         .catch(err => console.log(`Ошибка.....: ${err}`))
-    }},[]);
+    }},[loggedIn]);
 
   useEffect(() => { 
-    if (token){
+    if (loggedIn){
       api.getCards()
       .then(cards => {
         setCards(cards);
       })
       .catch(err => console.log(`Ошибка.....: ${err}`))
-    }},[]);
+    }},[loggedIn]);
 
   useEffect(() => {
 
@@ -85,7 +85,7 @@ function App() {
 
   function handleInfoTooltipClick(res) {
     if(res.data) {
-      setStatusSignup(true);
+      setStatus(true);
     }
     setIsInfoTooltipOpen(true);
   };
@@ -155,7 +155,10 @@ function App() {
               navigate('/', {replace: true});
             }
       })
-      .catch(err => handleInfoTooltipClick(err));
+      .catch(err => {
+        setStatus(false);
+        handleInfoTooltipClick(err);
+      });
   }
 
   function handleRegister(password, email) {
@@ -164,7 +167,10 @@ function App() {
         handleInfoTooltipClick(res);
         navigate('/sign-in', {replace: true});
     })
-    .catch(err =>  handleInfoTooltipClick(err));
+    .catch(err => {
+      setStatus(false);
+      handleInfoTooltipClick(err);
+    });
   }
 
   function signOut(){
@@ -201,7 +207,7 @@ function App() {
         <EditProfilePopup isOpen={isEditProfilePopupOpen} onClose={closeAllPopups} onUpdateUser={handleUpdateUser}/>
         <EditAvatarPopup isOpen={isEditAvatarPopupOpen} onClose={closeAllPopups} onUpdateAvatar={handleUpdateAvatar}/>
         <AddPlacePopup isOpen={isAddPlacePopupOpen} onClose={closeAllPopups} onAddPlace={handleAddPlaceSubmit}/>
-        <InfoTooltip isOpen={isInfoTooltipOpen} onClose={closeAllPopups} status={statusSignup}/>
+        <InfoTooltip isOpen={isInfoTooltipOpen} onClose={closeAllPopups} status={status}/>
   
         <PopupWithForm 
           name='submit' 
